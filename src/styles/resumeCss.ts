@@ -1,13 +1,17 @@
-/*
- * Document stylesheet for the printable resume.
- * Deliberately plain CSS with physical units: the same rules drive the
- * on-screen preview, the browser print dialog and headless Chrome export.
+/**
+ * The document stylesheet, as a string rather than a .css file.
+ *
+ * It is the single source for three consumers: the on-screen preview (injected
+ * once in the root layout), the browser print dialog, and the standalone HTML
+ * that headless Chrome turns into a PDF. Keeping it as a module means the PDF
+ * renderer needs no filesystem access, which is what lets the export work on
+ * serverless hosts where the source files are not present at runtime.
  *
  * Page geometry lives in @page (print) and .resume-page-frame (screen), never
  * on the document itself. Padding on the document would only be applied once,
  * which leaves every page after the first starting flush against the paper.
  */
-
+export const RESUME_CSS = `
 .resume-root {
   --resume-ink: #14181f;
   --resume-muted: #4b5563;
@@ -36,7 +40,7 @@
   box-sizing: border-box;
 }
 
-/* Header ------------------------------------------------------------------ */
+/* Header */
 
 .resume-name {
   margin: 0;
@@ -63,7 +67,7 @@
 }
 
 .resume-contact span:not(:last-child)::after {
-  content: "•";
+  content: "\\2022";
   margin-left: 2.5mm;
   color: var(--resume-rule);
 }
@@ -73,7 +77,7 @@
   text-decoration: none;
 }
 
-/* Sections ---------------------------------------------------------------- */
+/* Sections */
 
 .resume-section {
   margin-top: 4.6mm;
@@ -96,7 +100,7 @@
   hyphens: auto;
 }
 
-/* Experience -------------------------------------------------------------- */
+/* Experience */
 
 .resume-entry + .resume-entry {
   margin-top: 3.4mm;
@@ -151,7 +155,7 @@
   color: var(--resume-muted);
 }
 
-/* Bullets ----------------------------------------------------------------- */
+/* Bullets */
 
 .resume-bullets {
   margin: 1.4mm 0 0;
@@ -176,7 +180,7 @@
   background: var(--resume-accent);
 }
 
-/* Skills, education, languages -------------------------------------------- */
+/* Skills, education, languages */
 
 .resume-skill-row {
   display: grid;
@@ -195,11 +199,9 @@
   gap: 0 3mm;
 }
 
-/* Page breaking ------------------------------------------------------------ */
-
 /*
- * Bullet lists flow across a page break; only headings are glued to the
- * content that follows them. The pagination preview mirrors these exact rules
+ * Page breaking. Bullet lists flow across a page break; only headings are glued
+ * to the content that follows them. PaginatedPreview mirrors these exact rules
  * through data-block and data-keep-with-next attributes.
  */
 .resume-section-title,
@@ -219,7 +221,7 @@
   page-break-inside: avoid;
 }
 
-/* Density ----------------------------------------------------------------- */
+/* Density */
 
 [data-density="compact"] .resume-page {
   font-size: 9.5pt;
@@ -255,7 +257,7 @@
   font-size: 9.6pt;
 }
 
-/* Screen pagination -------------------------------------------------------- */
+/* Screen pagination */
 
 .resume-page-frame {
   position: relative;
@@ -284,7 +286,7 @@
   pointer-events: none;
 }
 
-/* Print -------------------------------------------------------------------- */
+/* Print */
 
 @page {
   size: A4;
@@ -301,3 +303,4 @@
     display: block !important;
   }
 }
+`;

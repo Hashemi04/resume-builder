@@ -1,11 +1,10 @@
 import type { Bullet, Resume } from "@/lib/types";
-import "@/styles/resume.css";
 
 /*
  * data-block marks the smallest unit that must never be split across a page,
  * and data-keep-with-next marks a heading that must stay with what follows.
  * PaginatedPreview reads both to reproduce the print layout on screen, so they
- * have to stay in sync with the break rules in resume.css.
+ * have to stay in sync with the break rules in RESUME_CSS.
  */
 
 function Bullets({ items }: { items: Bullet[] }) {

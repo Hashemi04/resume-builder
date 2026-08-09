@@ -36,7 +36,9 @@ src/lib/ai.ts            Prompt, provider call, and validation of the AI respons
 src/lib/versions.ts      Saved-version model, backup export and import.
 src/components/          UI plus the printable ResumeDocument.
 src/components/PaginatedPreview.tsx  Measures the document and splits it into pages.
-src/styles/resume.css    The document stylesheet, in millimetres, A4.
+src/styles/resumeCss.ts  The document stylesheet, in millimetres, A4.
+src/lib/renderResumeHtml.tsx  Renders the resume as standalone HTML for the PDF.
+src/lib/browser.ts       Launches local Chrome, or bundled Chromium when deployed.
 src/app/api/tailor       POST a job description, get a TailorPlan back.
 src/app/api/pdf          POST a resume, get a PDF back.
 ```
@@ -80,7 +82,7 @@ into real A4 pages with the printed margins, and each page is labelled. Page
 breaks are computed with the same rules the print stylesheet applies — a
 `[data-block]` element is never split, and a `[data-keep-with-next]` heading
 moves to the next page along with the content below it. If you change those
-attributes in `ResumeDocument`, change the matching rules in `resume.css` too,
+attributes in `ResumeDocument`, change the matching rules in `resumeCss.ts` too,
 or the preview and the PDF will drift apart.
 
 Page geometry comes from `@page` (print) and `.resume-page-frame` (screen),
@@ -123,12 +125,37 @@ file is safe.
 
 **Download PDF** renders the resume in headless Chrome and downloads a real A4
 PDF with selectable text, which is what applicant tracking systems need to parse
-it. It reuses the Chrome already installed on your machine; set
+it. Locally it reuses the Chrome already installed on your machine; set
 `PUPPETEER_EXECUTABLE_PATH` if it lives somewhere unusual. **Print** opens the
 browser print dialog as a fallback.
 
+The document is rendered to standalone HTML in the same request and handed to
+Chrome directly, so nothing depends on a second HTTP round trip back into the
+app. That is what makes the export work unchanged on a serverless host.
+
 Use the **spacing** button to switch to compact if a resume spills onto an
 almost-empty extra page.
+
+## Deploying
+
+The app is deployable as-is; the only host-specific part is the browser. When
+`VERCEL`, `NETLIFY` or `AWS_LAMBDA_FUNCTION_NAME` is set, `src/lib/browser.ts`
+loads a Chromium build packaged for those runtimes (`@sparticuz/chromium`)
+instead of looking for a local install.
+
+```bash
+npx vercel        # preview deployment
+npx vercel --prod # production
+```
+
+Or import the GitHub repository at vercel.com/new, which then redeploys on every
+push. No environment variables are required — set `AI_API_KEY` only if you want
+AI rewriting to work without pasting a key into the UI.
+
+Two settings matter for the export and are already in the repo: the PDF route
+declares `maxDuration = 60` because a cold Chromium start costs a few seconds,
+and `next.config.ts` lists `puppeteer-core` and `@sparticuz/chromium` as
+external so they are required from `node_modules` rather than bundled.
 
 ## Profile checklist
 

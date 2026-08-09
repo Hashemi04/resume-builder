@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import puppeteer from "puppeteer-core";
 import type { Density } from "@/components/ResumeDocument";
 import { masterResume } from "@/data/resume";
-import { findChromeExecutable } from "@/lib/chrome";
-import { dropPrintJob, putPrintJob } from "@/lib/printStore";
+import { BrowserUnavailableError, launchBrowser } from "@/lib/browser";
+import { renderResumeHtml } from "@/lib/renderResumeHtml";
 import { applyPlan } from "@/lib/tailor";
 import type { Resume, TailorPlan } from "@/lib/types";
 
@@ -41,36 +40,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing resume payload." }, { status: 400 });
   }
 
-  const executablePath = findChromeExecutable();
-  if (!executablePath) {
-    return NextResponse.json(
-      {
-        error:
-          "No Chrome or Chromium binary was found. Install Chrome, or set PUPPETEER_EXECUTABLE_PATH, or use the Print button instead.",
-      },
-      { status: 501 },
-    );
-  }
-
-  const jobId = putPrintJob({ resume, density: body.density === "compact" ? "compact" : "comfortable" });
-  const printUrl = new URL(`/print/${jobId}`, request.url).toString();
+  const html = await renderResumeHtml(
+    resume,
+    body.density === "compact" ? "compact" : "comfortable",
+  );
 
   let browser;
   try {
-    browser = await puppeteer.launch({
-      executablePath,
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
-    });
+    browser = await launchBrowser();
 
     const page = await browser.newPage();
-    const navigation = await page.goto(printUrl, { waitUntil: "networkidle0", timeout: 30_000 });
-    if (!navigation?.ok()) {
-      throw new Error(`The print page returned HTTP ${navigation?.status() ?? "no response"}.`);
-    }
+    await page.setContent(html, { waitUntil: "load", timeout: 30_000 });
     await page.emulateMediaType("print");
 
-    // Page size and margins come from the @page rule in resume.css.
+    // Page size and margins come from the @page rule in the document stylesheet.
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,
@@ -85,6 +68,9 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    if (error instanceof BrowserUnavailableError) {
+      return NextResponse.json({ error: error.message }, { status: 501 });
+    }
     return NextResponse.json(
       {
         error: `PDF generation failed. ${error instanceof Error ? error.message : "Unknown error."}`,
@@ -93,6 +79,5 @@ export async function POST(request: Request) {
     );
   } finally {
     await browser?.close().catch(() => undefined);
-    dropPrintJob(jobId);
   }
 }
