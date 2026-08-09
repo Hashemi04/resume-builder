@@ -1,4 +1,7 @@
+import type { Density } from "@/components/ResumeDocument";
 import type { Resume } from "@/lib/types";
+
+export type PrintJob = { resume: Resume; density: Density };
 
 /**
  * Headless Chrome renders the resume by visiting /print/<id> in this same
@@ -6,7 +9,7 @@ import type { Resume } from "@/lib/types";
  */
 const TTL_MS = 60_000;
 
-type Entry = { resume: Resume; expiresAt: number };
+type Entry = PrintJob & { expiresAt: number };
 
 /**
  * Next bundles route handlers and pages into separate module graphs, so a
@@ -25,16 +28,17 @@ function sweep() {
   }
 }
 
-export function putPrintJob(resume: Resume): string {
+export function putPrintJob(job: PrintJob): string {
   sweep();
   const id = crypto.randomUUID();
-  store.set(id, { resume, expiresAt: Date.now() + TTL_MS });
+  store.set(id, { ...job, expiresAt: Date.now() + TTL_MS });
   return id;
 }
 
-export function getPrintJob(id: string): Resume | null {
+export function getPrintJob(id: string): PrintJob | null {
   sweep();
-  return store.get(id)?.resume ?? null;
+  const entry = store.get(id);
+  return entry ? { resume: entry.resume, density: entry.density } : null;
 }
 
 export function dropPrintJob(id: string) {

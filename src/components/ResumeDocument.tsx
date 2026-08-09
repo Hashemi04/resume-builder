@@ -1,12 +1,21 @@
 import type { Bullet, Resume } from "@/lib/types";
 import "@/styles/resume.css";
 
+/*
+ * data-block marks the smallest unit that must never be split across a page,
+ * and data-keep-with-next marks a heading that must stay with what follows.
+ * PaginatedPreview reads both to reproduce the print layout on screen, so they
+ * have to stay in sync with the break rules in resume.css.
+ */
+
 function Bullets({ items }: { items: Bullet[] }) {
   if (items.length === 0) return null;
   return (
     <ul className="resume-bullets">
       {items.map((bullet) => (
-        <li key={bullet.id}>{bullet.text}</li>
+        <li key={bullet.id} data-block>
+          {bullet.text}
+        </li>
       ))}
     </ul>
   );
@@ -15,20 +24,31 @@ function Bullets({ items }: { items: Bullet[] }) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="resume-section">
-      <h2 className="resume-section-title">{title}</h2>
+      <h2 className="resume-section-title" data-block data-keep-with-next>
+        {title}
+      </h2>
       {children}
     </section>
   );
 }
 
-export function ResumeDocument({ resume }: { resume: Resume }) {
+export type Density = "comfortable" | "compact";
+
+export function ResumeDocument({
+  resume,
+  density = "comfortable",
+}: {
+  resume: Resume;
+  density?: Density;
+}) {
   const { basics } = resume;
   const links = basics.links.filter((link) => link.url.trim().length > 0);
+  const skills = resume.skills.filter((group) => group.items.length > 0);
 
   return (
-    <div className="resume-root">
+    <div className="resume-root" data-density={density}>
       <article className="resume-page">
-        <header>
+        <header data-block>
           <h1 className="resume-name">{basics.name}</h1>
           <p className="resume-headline">{basics.headline}</p>
           <p className="resume-contact">
@@ -51,14 +71,16 @@ export function ResumeDocument({ resume }: { resume: Resume }) {
 
         {resume.summary ? (
           <Section title="Professional Summary">
-            <p className="resume-summary">{resume.summary}</p>
+            <p className="resume-summary" data-block>
+              {resume.summary}
+            </p>
           </Section>
         ) : null}
 
-        {resume.skills.length > 0 ? (
-          <Section title="Technical Skills">
-            {resume.skills.map((group) => (
-              <div className="resume-skill-row" key={group.id}>
+        {skills.length > 0 ? (
+          <Section title={resume.skillsTitle?.trim() || "Technical Skills"}>
+            {skills.map((group) => (
+              <div className="resume-skill-row" key={group.id} data-block>
                 <span className="resume-skill-label">{group.label}</span>
                 <span>{group.items.join(", ")}</span>
               </div>
@@ -70,24 +92,26 @@ export function ResumeDocument({ resume }: { resume: Resume }) {
           <Section title="Professional Experience">
             {resume.experience.map((job) => (
               <div className="resume-entry" key={job.id}>
-                <div className="resume-avoid-break">
-                  <div className="resume-entry-head">
-                    <span>
-                      <span className="resume-entry-company">{job.company}</span>
-                      <span className="resume-entry-role"> — {job.role}</span>
-                    </span>
-                    <span className="resume-entry-meta">
-                      {job.start} – {job.end}
-                      {job.location ? ` | ${job.location}` : ""}
-                    </span>
-                  </div>
-                  {job.companyNote ? <p className="resume-entry-note">{job.companyNote}</p> : null}
-                  <Bullets items={job.bullets} />
+                <div className="resume-entry-head" data-block data-keep-with-next>
+                  <span>
+                    <span className="resume-entry-company">{job.company}</span>
+                    <span className="resume-entry-role"> — {job.role}</span>
+                  </span>
+                  <span className="resume-entry-meta">
+                    {job.start} – {job.end}
+                    {job.location ? ` | ${job.location}` : ""}
+                  </span>
                 </div>
+                {job.companyNote ? (
+                  <p className="resume-entry-note" data-block>
+                    {job.companyNote}
+                  </p>
+                ) : null}
+                <Bullets items={job.bullets} />
 
                 {job.projects.map((project) => (
                   <div className="resume-project" key={project.id}>
-                    <div className="resume-project-head">
+                    <div className="resume-project-head" data-block data-keep-with-next>
                       <span className="resume-project-name">{project.name}</span>
                       {project.summary ? (
                         <span className="resume-project-summary"> — {project.summary}</span>
@@ -104,16 +128,16 @@ export function ResumeDocument({ resume }: { resume: Resume }) {
         {resume.leadership.length > 0 ? (
           <Section title="Leadership & Community">
             {resume.leadership.map((entry) => (
-              <div className="resume-entry resume-avoid-break" key={entry.id}>
-                <div className="resume-entry-head">
+              <div className="resume-entry" key={entry.id}>
+                <div className="resume-entry-head" data-block data-keep-with-next>
                   <span className="resume-entry-company">{entry.organization}</span>
                   {entry.institution ? (
                     <span className="resume-entry-meta">{entry.institution}</span>
                   ) : null}
                 </div>
                 {entry.roles.map((role) => (
-                  <div key={role.id} style={{ marginTop: "1.6mm" }}>
-                    <div className="resume-entry-head">
+                  <div className="resume-role-block" key={role.id}>
+                    <div className="resume-entry-head" data-block data-keep-with-next>
                       <span className="resume-entry-role">{role.title}</span>
                       <span className="resume-entry-meta">{role.period}</span>
                     </div>
@@ -128,15 +152,19 @@ export function ResumeDocument({ resume }: { resume: Resume }) {
         {resume.education.length > 0 ? (
           <Section title="Education">
             {resume.education.map((item) => (
-              <div className="resume-entry resume-avoid-break" key={item.id}>
-                <div className="resume-entry-head">
+              <div className="resume-entry" key={item.id}>
+                <div className="resume-entry-head" data-block data-keep-with-next>
                   <span>
                     <span className="resume-entry-company">{item.degree}</span>
                     <span className="resume-entry-role"> — {item.institution}</span>
                   </span>
                   <span className="resume-entry-meta">{item.period}</span>
                 </div>
-                {item.note ? <p className="resume-entry-note">{item.note}</p> : null}
+                {item.note ? (
+                  <p className="resume-entry-note" data-block>
+                    {item.note}
+                  </p>
+                ) : null}
               </div>
             ))}
           </Section>
@@ -144,7 +172,7 @@ export function ResumeDocument({ resume }: { resume: Resume }) {
 
         {resume.languages.length > 0 ? (
           <Section title="Languages">
-            <div className="resume-inline-list">
+            <div className="resume-inline-list" data-block>
               {resume.languages.map((language) => (
                 <span key={language.name}>
                   <strong>{language.name}</strong> — {language.level}

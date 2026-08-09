@@ -16,7 +16,9 @@ export const DEFAULT_TAILOR_OPTIONS: TailorOptions = {
 type ScoredBullet = { bullet: Bullet; score: number };
 
 function scoreBullet(bullet: Bullet, tagWeights: Map<string, number>, words: Set<string>): number {
-  let score = bullet.priority * 1.2;
+  // Baseline priority is weighted heavily enough that a career-defining bullet
+  // survives even when a narrower one happens to match more keywords.
+  let score = bullet.priority * 2.2;
 
   for (const tag of bullet.tags) {
     const weight = tagWeights.get(tag);

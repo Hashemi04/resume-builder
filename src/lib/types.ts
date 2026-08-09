@@ -75,6 +75,8 @@ export type Resume = {
   leadership: Leadership[];
   education: Education[];
   skills: SkillGroup[];
+  /** Heading for the skills section. Defaults to "Technical Skills". */
+  skillsTitle?: string;
   languages: Language[];
 };
 

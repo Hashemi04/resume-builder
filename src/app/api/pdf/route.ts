@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import puppeteer from "puppeteer-core";
+import type { Density } from "@/components/ResumeDocument";
 import { masterResume } from "@/data/resume";
 import { findChromeExecutable } from "@/lib/chrome";
 import { dropPrintJob, putPrintJob } from "@/lib/printStore";
@@ -9,21 +10,25 @@ import type { Resume, TailorPlan } from "@/lib/types";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-function fileNameFor(resume: Resume): string {
+function fileNameFor(resume: Resume, label?: string): string {
   const slug = (value: string) =>
     value
       .normalize("NFKD")
       .replace(/[^a-zA-Z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
   const name = slug(resume.basics.name) || "resume";
-  const role = slug(resume.basics.headline.split(/[|—-]/)[0] ?? "").slice(0, 40);
-  return [name, role, "Resume"].filter(Boolean).join("-") + ".pdf";
+  // A saved version's name identifies the application better than the headline.
+  const subject = label?.trim()
+    ? slug(label).slice(0, 50)
+    : slug(resume.basics.headline.split(/[|—-]/)[0] ?? "").slice(0, 40);
+  return [name, subject, "Resume"].filter(Boolean).join("-") + ".pdf";
 }
 
 export async function POST(request: Request) {
-  let body: { resume?: Resume; plan?: TailorPlan };
+  type PdfRequest = { resume?: Resume; plan?: TailorPlan; density?: Density; label?: string };
+  let body: PdfRequest;
   try {
-    body = (await request.json()) as { resume?: Resume; plan?: TailorPlan };
+    body = (await request.json()) as PdfRequest;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
@@ -47,7 +52,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const jobId = putPrintJob(resume);
+  const jobId = putPrintJob({ resume, density: body.density === "compact" ? "compact" : "comfortable" });
   const printUrl = new URL(`/print/${jobId}`, request.url).toString();
 
   let browser;
@@ -65,17 +70,17 @@ export async function POST(request: Request) {
     }
     await page.emulateMediaType("print");
 
+    // Page size and margins come from the @page rule in resume.css.
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,
       preferCSSPageSize: true,
-      margin: { top: "0", right: "0", bottom: "0", left: "0" },
     });
 
     return new Response(new Uint8Array(pdf), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${fileNameFor(resume)}"`,
+        "Content-Disposition": `attachment; filename="${fileNameFor(resume, body.label)}"`,
         "Cache-Control": "no-store",
       },
     });

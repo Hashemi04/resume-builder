@@ -2,6 +2,10 @@
  * Document stylesheet for the printable resume.
  * Deliberately plain CSS with physical units: the same rules drive the
  * on-screen preview, the browser print dialog and headless Chrome export.
+ *
+ * Page geometry lives in @page (print) and .resume-page-frame (screen), never
+ * on the document itself. Padding on the document would only be applied once,
+ * which leaves every page after the first starting flush against the paper.
  */
 
 .resume-root {
@@ -10,13 +14,16 @@
   --resume-accent: #1a3d5c;
   --resume-rule: #c9ced6;
   --resume-font: "Liberation Sans", Arial, "Helvetica Neue", Helvetica, sans-serif;
+
+  --page-width: 210mm;
+  --page-height: 297mm;
+  --page-margin-top: 13mm;
+  --page-margin-side: 14mm;
+  --page-margin-bottom: 12mm;
 }
 
 .resume-page {
-  width: 210mm;
-  min-height: 297mm;
-  padding: 13mm 14mm 12mm;
-  margin: 0 auto;
+  width: 100%;
   background: #ffffff;
   color: var(--resume-ink);
   font-family: var(--resume-font);
@@ -126,6 +133,10 @@
   color: var(--resume-muted);
 }
 
+.resume-role-block {
+  margin-top: 1.6mm;
+}
+
 .resume-project {
   margin-top: 2.2mm;
 }
@@ -184,20 +195,12 @@
   gap: 0 3mm;
 }
 
-/* Page behaviour ---------------------------------------------------------- */
+/* Page breaking ------------------------------------------------------------ */
 
 /*
- * Bullet lists are allowed to flow across a page break, otherwise a long list
- * jumps to the next page and leaves a third of the previous one blank. Only
- * headings are kept with the content that follows them.
- */
-.resume-avoid-break {
-  break-inside: auto;
-}
-
-/*
- * Only headings get break-after: avoid. Chaining it onto trailing elements too
- * would weld a whole section to the one after it and eject both to a new page.
+ * Bullet lists flow across a page break; only headings are glued to the
+ * content that follows them. The pagination preview mirrors these exact rules
+ * through data-block and data-keep-with-next attributes.
  */
 .resume-section-title,
 .resume-entry-head,
@@ -208,35 +211,93 @@
   page-break-inside: avoid;
 }
 
-.resume-entry-note {
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-
+.resume-entry-note,
+.resume-summary,
+.resume-skill-row,
 .resume-bullets li {
   break-inside: avoid;
   page-break-inside: avoid;
 }
 
-.resume-section {
-  break-inside: auto;
+/* Density ----------------------------------------------------------------- */
+
+[data-density="compact"] .resume-page {
+  font-size: 9.5pt;
+  line-height: 1.34;
 }
+
+[data-density="compact"] .resume-name {
+  font-size: 19pt;
+}
+
+[data-density="compact"] .resume-headline {
+  font-size: 10pt;
+}
+
+[data-density="compact"] .resume-section {
+  margin-top: 3.4mm;
+}
+
+[data-density="compact"] .resume-entry + .resume-entry {
+  margin-top: 2.6mm;
+}
+
+[data-density="compact"] .resume-bullets li {
+  margin-bottom: 0.7mm;
+}
+
+[data-density="compact"] .resume-entry-company {
+  font-size: 10.4pt;
+}
+
+[data-density="compact"] .resume-entry-role,
+[data-density="compact"] .resume-project-name {
+  font-size: 9.6pt;
+}
+
+/* Screen pagination -------------------------------------------------------- */
+
+.resume-page-frame {
+  position: relative;
+  width: var(--page-width);
+  height: var(--page-height);
+  padding: var(--page-margin-top) var(--page-margin-side) var(--page-margin-bottom);
+  background: #ffffff;
+  overflow: hidden;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.1), 0 12px 32px rgba(16, 24, 40, 0.12);
+}
+
+.resume-page-viewport {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Off-screen copy used only to measure where the page breaks fall. */
+.resume-measure {
+  position: absolute;
+  top: 0;
+  left: -10000px;
+  width: calc(var(--page-width) - (2 * var(--page-margin-side)));
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Print -------------------------------------------------------------------- */
 
 @page {
   size: A4;
-  margin: 0;
-}
-
-@media screen {
-  .resume-page {
-    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.1), 0 12px 32px rgba(16, 24, 40, 0.12);
-  }
+  margin: 13mm 14mm 12mm;
 }
 
 @media print {
-  .resume-page {
-    box-shadow: none;
-    margin: 0;
-    min-height: auto;
+  .resume-measure,
+  .screen-only {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
   }
 }

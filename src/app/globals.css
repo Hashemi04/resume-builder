@@ -18,10 +18,18 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
+/* Only rendered when printing; the on-screen preview is paginated separately. */
+.print-only {
+  display: none;
+}
+
 /* The resume itself must always print on white, regardless of OS theme. */
 @media print {
+  html,
   body {
     background: #ffffff;
+    margin: 0;
+    padding: 0;
   }
 
   .no-print {
