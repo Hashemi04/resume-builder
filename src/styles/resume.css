@@ -1,0 +1,242 @@
+/*
+ * Document stylesheet for the printable resume.
+ * Deliberately plain CSS with physical units: the same rules drive the
+ * on-screen preview, the browser print dialog and headless Chrome export.
+ */
+
+.resume-root {
+  --resume-ink: #14181f;
+  --resume-muted: #4b5563;
+  --resume-accent: #1a3d5c;
+  --resume-rule: #c9ced6;
+  --resume-font: "Liberation Sans", Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+
+.resume-page {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 13mm 14mm 12mm;
+  margin: 0 auto;
+  background: #ffffff;
+  color: var(--resume-ink);
+  font-family: var(--resume-font);
+  font-size: 10.2pt;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.resume-page * {
+  box-sizing: border-box;
+}
+
+/* Header ------------------------------------------------------------------ */
+
+.resume-name {
+  margin: 0;
+  font-size: 21pt;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+}
+
+.resume-headline {
+  margin: 1.6mm 0 0;
+  font-size: 10.8pt;
+  font-weight: 600;
+  color: var(--resume-accent);
+}
+
+.resume-contact {
+  margin: 2.2mm 0 0;
+  font-size: 9.2pt;
+  color: var(--resume-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 2.5mm;
+}
+
+.resume-contact span:not(:last-child)::after {
+  content: "•";
+  margin-left: 2.5mm;
+  color: var(--resume-rule);
+}
+
+.resume-contact a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Sections ---------------------------------------------------------------- */
+
+.resume-section {
+  margin-top: 4.6mm;
+}
+
+.resume-section-title {
+  margin: 0 0 2mm;
+  padding-bottom: 1mm;
+  border-bottom: 0.5pt solid var(--resume-rule);
+  font-size: 9.6pt;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--resume-accent);
+}
+
+.resume-summary {
+  margin: 0;
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* Experience -------------------------------------------------------------- */
+
+.resume-entry + .resume-entry {
+  margin-top: 3.4mm;
+}
+
+.resume-entry-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4mm;
+}
+
+.resume-entry-company {
+  font-size: 11pt;
+  font-weight: 700;
+}
+
+.resume-entry-role {
+  font-size: 10.2pt;
+  font-weight: 600;
+  color: var(--resume-accent);
+}
+
+.resume-entry-meta {
+  font-size: 9.2pt;
+  color: var(--resume-muted);
+  white-space: nowrap;
+}
+
+.resume-entry-note {
+  margin: 0.5mm 0 0;
+  font-size: 9.2pt;
+  font-style: italic;
+  color: var(--resume-muted);
+}
+
+.resume-project {
+  margin-top: 2.2mm;
+}
+
+.resume-project-name {
+  font-size: 10pt;
+  font-weight: 700;
+}
+
+.resume-project-summary {
+  font-size: 9.4pt;
+  color: var(--resume-muted);
+}
+
+/* Bullets ----------------------------------------------------------------- */
+
+.resume-bullets {
+  margin: 1.4mm 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.resume-bullets li {
+  position: relative;
+  padding-left: 4mm;
+  margin-bottom: 1.1mm;
+}
+
+.resume-bullets li::before {
+  content: "";
+  position: absolute;
+  left: 0.8mm;
+  top: 1.9mm;
+  width: 1.2mm;
+  height: 1.2mm;
+  border-radius: 50%;
+  background: var(--resume-accent);
+}
+
+/* Skills, education, languages -------------------------------------------- */
+
+.resume-skill-row {
+  display: grid;
+  grid-template-columns: 34mm 1fr;
+  gap: 2mm;
+  margin-bottom: 1.1mm;
+}
+
+.resume-skill-label {
+  font-weight: 700;
+}
+
+.resume-inline-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 3mm;
+}
+
+/* Page behaviour ---------------------------------------------------------- */
+
+/*
+ * Bullet lists are allowed to flow across a page break, otherwise a long list
+ * jumps to the next page and leaves a third of the previous one blank. Only
+ * headings are kept with the content that follows them.
+ */
+.resume-avoid-break {
+  break-inside: auto;
+}
+
+/*
+ * Only headings get break-after: avoid. Chaining it onto trailing elements too
+ * would weld a whole section to the one after it and eject both to a new page.
+ */
+.resume-section-title,
+.resume-entry-head,
+.resume-project-head {
+  break-after: avoid;
+  page-break-after: avoid;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.resume-entry-note {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.resume-bullets li {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.resume-section {
+  break-inside: auto;
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media screen {
+  .resume-page {
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.1), 0 12px 32px rgba(16, 24, 40, 0.12);
+  }
+}
+
+@media print {
+  .resume-page {
+    box-shadow: none;
+    margin: 0;
+    min-height: auto;
+  }
+}
