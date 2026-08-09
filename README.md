@@ -69,11 +69,23 @@ Tags are matched against job descriptions, so use the vocabulary in
 Copy `.env.example` to `.env.local` and set `AI_API_KEY`, or paste a key into
 the **AI rewriting** panel (that stays in your browser's local storage and is
 never committed). Any OpenAI-compatible endpoint works — change `AI_BASE_URL`
-and `AI_MODEL` for OpenRouter, Groq, or a local model.
+and `AI_MODEL` for Gemini, OpenRouter, Groq, or a local model.
+
+Gemini is used through its OpenAI-compatible endpoint, so no provider-specific
+code is needed:
+
+```bash
+AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+AI_MODEL=gemini-2.5-flash
+```
+
+Pin a model rather than using the `gemini-flash-latest` alias: it tracks the
+newest release and is the first to answer 503 when that release is busy.
 
 With a key, the AI also rewrites the summary and rewords bullets to mirror the
 job ad. Without one, the app falls back to keyword matching, and it also falls
-back automatically if the AI call fails.
+back automatically if the AI call fails — the response says which path produced
+the plan, and the UI shows the reason for a fallback.
 
 ## Page-accurate preview
 
