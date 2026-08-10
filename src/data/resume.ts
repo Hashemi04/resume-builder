@@ -299,8 +299,8 @@ export const masterResume: Resume = {
         {
           id: "sace-lead",
           title: "Frontend Working Group Lead",
-          period: "2024 - Present",
-          duration: "2 years",
+          period: "2025 - Present",
+          duration: "10 months",
           bullets: [
             {
               id: "sace-lead-b1",
@@ -331,7 +331,7 @@ export const masterResume: Resume = {
         {
           id: "sace-dev",
           title: "Frontend Developer",
-          period: "2022 - 2024",
+          period: "2023 - 2025",
           duration: "2 years",
           bullets: [
             {
