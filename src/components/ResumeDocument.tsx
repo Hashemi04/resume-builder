@@ -97,6 +97,7 @@ export function ResumeDocument({
                   </span>
                   <span className="resume-entry-meta">
                     {job.start} – {job.end}
+                    {job.duration ? ` (${job.duration})` : ""}
                   </span>
                 </div>
                 {job.companyNote ? (
@@ -136,7 +137,10 @@ export function ResumeDocument({
                   <div className="resume-role-block" key={role.id}>
                     <div className="resume-entry-head" data-block data-keep-with-next>
                       <span className="resume-entry-role">{role.title}</span>
-                      <span className="resume-entry-meta">{role.period}</span>
+                      <span className="resume-entry-meta">
+                        {role.period}
+                        {role.duration ? ` (${role.duration})` : ""}
+                      </span>
                     </div>
                     <Bullets items={role.bullets} />
                   </div>

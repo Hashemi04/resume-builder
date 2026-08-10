@@ -21,6 +21,7 @@ export type Experience = {
   location?: string;
   start: string;
   end: string;
+  duration?: string;
   companyNote?: string;
   bullets: Bullet[];
   projects: Project[];
@@ -30,6 +31,7 @@ export type LeadershipRole = {
   id: string;
   title: string;
   period: string;
+  duration?: string;
   bullets: Bullet[];
 };
 

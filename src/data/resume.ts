@@ -30,6 +30,7 @@ export const masterResume: Resume = {
       location: "Iran",
       start: "August 2025",
       end: "Present",
+      duration: "1 year",
       companyNote: "Technology-driven logistics and transportation company.",
       bullets: [
         {
@@ -190,6 +191,7 @@ export const masterResume: Resume = {
       location: "Iran",
       start: "December 2024",
       end: "August 2025",
+      duration: "8 months",
       companyNote: "Home and technical services marketplace.",
       bullets: [
         {
@@ -298,6 +300,7 @@ export const masterResume: Resume = {
           id: "sace-lead",
           title: "Frontend Working Group Lead",
           period: "2024 - Present",
+          duration: "2 years",
           bullets: [
             {
               id: "sace-lead-b1",
@@ -329,6 +332,7 @@ export const masterResume: Resume = {
           id: "sace-dev",
           title: "Frontend Developer",
           period: "2022 - 2024",
+          duration: "2 years",
           bullets: [
             {
               id: "sace-dev-b1",
