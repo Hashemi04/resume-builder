@@ -51,7 +51,6 @@ export function ResumeDocument({
           <h1 className="resume-name">{basics.name}</h1>
           <p className="resume-headline">{basics.headline}</p>
           <p className="resume-contact">
-            {basics.location ? <span>{basics.location}</span> : null}
             {basics.phone ? <span>{basics.phone}</span> : null}
             {basics.email ? (
               <span>
@@ -98,7 +97,6 @@ export function ResumeDocument({
                   </span>
                   <span className="resume-entry-meta">
                     {job.start} – {job.end}
-                    {job.location ? ` | ${job.location}` : ""}
                   </span>
                 </div>
                 {job.companyNote ? (
